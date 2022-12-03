@@ -6,11 +6,11 @@ import Data.Array ((!!))
 import Data.Foldable (foldl)
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), split)
-import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Day2Input as Day2Input
 import Effect (Effect)
 import Effect.Console (logShow)
+import Parsing (linesFrom, tupleParser, tupleParser')
 
 data Shape
   = Rock
@@ -67,31 +67,18 @@ shapeForResult Scissors Lose = Paper
 shapeForResult l Draw = l
 
 parseLine :: String -> Maybe Match
-parseLine line = do
-  let parts = split (Pattern " ") line
-  left <- parts !! 0 >>= shapeFor
-  right <- parts !! 1 >>= shapeFor
-  Just $ Match (Tuple left right)
+parseLine = tupleParser shapeFor shapeFor >>> map Match
 
 parseLine2 :: String -> Maybe Match
-parseLine2 line = do
-  let parts = split (Pattern " ") line
-  left <- parts !! 0 >>= shapeFor
-  right <- parts !! 1 >>= resultFor <#> shapeForResult left
-  Just $ Match (Tuple left right)
-
-parseInput :: String -> Maybe (Array Match)
-parseInput = split (Pattern "\n") >>> traverse parseLine
-
-parseInput2 :: String -> Maybe (Array Match)
-parseInput2 = split (Pattern "\n") >>> traverse parseLine2
+parseLine2 = tupleParser' shapeFor (\left -> \right -> resultFor right <#> shapeForResult left) >>> map Match
 
 part1 :: String -> Maybe Int
-part1 = parseInput <#> map (foldl (\t m -> t + scoreForMatch m) 0)
+part1 = linesFrom parseLine <#> map (foldl (\t m -> t + scoreForMatch m) 0)
 
 part2 :: String -> Maybe Int
-part2 = parseInput2 <#> map (foldl (\t m -> t + scoreForMatch m) 0)
+part2 = linesFrom parseLine2 <#> map (foldl (\t m -> t + scoreForMatch m) 0)
 
 main :: Effect Unit
 main = do
+  logShow $ part1 Day2Input.realInput
   logShow $ part2 Day2Input.realInput
