@@ -70,7 +70,7 @@ parseLine :: String -> Maybe Match
 parseLine = tupleParser shapeFor shapeFor >>> map Match
 
 parseLine2 :: String -> Maybe Match
-parseLine2 = tupleParser' shapeFor (\left -> \right -> resultFor right <#> shapeForResult left) >>> map Match
+parseLine2 = tupleParser' shapeFor (\left right -> resultFor right <#> shapeForResult left) >>> map Match
 
 part1 :: String -> Maybe Int
 part1 = linesFrom parseLine <#> map (foldl (\t m -> t + scoreForMatch m) 0)
