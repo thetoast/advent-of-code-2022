@@ -151,18 +151,23 @@ dirSizes state@{ children, size } p =
     Just s -> { dirSizes: Map.empty, totalSize: s }
     Nothing ->
       let
-          childs = path p <$> case Map.lookup p children of
-                                  Just c -> c
-                                  Nothing -> []
-          total = childs <#> dirSizes state # foldl (\a c -> {dirSizes: Map.union a.dirSizes c.dirSizes, totalSize: a.totalSize + c.totalSize}) {dirSizes: Map.empty, totalSize: 0}
-       in total{ dirSizes = Map.insert p total.totalSize total.dirSizes}
+        childs = path p <$> case Map.lookup p children of
+          Just c -> c
+          Nothing -> []
+        total = childs <#> dirSizes state #
+          foldl
+            (\a c -> { dirSizes: Map.union a.dirSizes c.dirSizes, totalSize: a.totalSize + c.totalSize })
+            { dirSizes: Map.empty, totalSize: 0 }
+      in
+        total { dirSizes = Map.insert p total.totalSize total.dirSizes }
 
 solve1 :: State -> Int -> Int
 solve1 state maxSize =
   let
-      sizes = dirSizes state (FQName "/") # _.dirSizes
-      filtered = Map.toUnfoldable sizes # Array.mapMaybe \(Tuple _ v) -> if v <= maxSize then Just v else Nothing
-   in sum filtered
+    sizes = dirSizes state (FQName "/") # _.dirSizes
+    filtered = Map.toUnfoldable sizes # Array.mapMaybe \(Tuple _ v) -> if v <= maxSize then Just v else Nothing
+  in
+    sum filtered
 
 solve2 :: State -> Int -> Int -> Maybe Int
 solve2 state totalSize targetFree = do
