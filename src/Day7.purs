@@ -56,15 +56,6 @@ parseCommand input = case String.split (Pattern " ") input of
   [ "$", "ls" ] -> Just $ LS []
   _ -> Nothing
 
-getThing :: String
-getThing = "not used"
-
---getChildren :: State -> Maybe (Array FSEntry)
---getChildren state = do
---  case Array.last state of
---    Just (Folder { entries }) -> Just entries
---    _ -> Nothing
-
 path :: FQName -> Name -> FQName
 path (FQName "/") (Name child) = FQName $ "/" <> child
 path (FQName parent) (Name child) = FQName $ parent <> "/" <> child
