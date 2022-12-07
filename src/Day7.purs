@@ -7,8 +7,6 @@ import Prelude
 import Data.Array as Array
 import Data.Foldable (foldl, sum)
 import Data.Int (fromString)
-import Data.List (reverse, sort)
-import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
@@ -16,7 +14,6 @@ import Data.String (Pattern(..))
 import Data.String as String
 import Data.Tuple (Tuple(..))
 import Day7Input as Day7Input
-import Debug (spy)
 import Effect (Effect)
 import Effect.Console (log, logShow)
 
