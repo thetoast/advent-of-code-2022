@@ -23,8 +23,7 @@ class Distance a where
 --------------------------------------------------------------------------------
 -- Point
 --------------------------------------------------------------------------------
-newtype Point
-  = Point
+newtype Point = Point
   { x :: Int
   , y :: Int
   }
@@ -41,6 +40,12 @@ instance showPoint :: Show Point where
 instance distPoint :: Distance Point where
   dist (Point p1) (Point p2) = sqrt $ toNumber ((pow (p1.x - p2.x) 2) + (pow (p1.y - p2.y) 2))
 
+instance Semiring Point where
+  add (Point p1) (Point p2) = Point { x: p1.x + p2.x, y: p1.y + p2.y }
+  mul (Point p1) (Point p2) = Point { x: p1.x * p2.x, y: p1.y * p2.y }
+  zero = Point { x: 0, y: 0 }
+  one = Point { x: 1, y: 1 }
+
 pointRegex :: Regex
 pointRegex = unsafeRegex "\\(?(-?\\d+),(-?\\d+)\\)?" noFlags
 
@@ -54,8 +59,7 @@ pointFromString s = do
 --------------------------------------------------------------------------------
 -- Point3D
 --------------------------------------------------------------------------------
-newtype Point3d
-  = Point3d
+newtype Point3d = Point3d
   { x :: Int
   , y :: Int
   , z :: Int
@@ -93,8 +97,7 @@ point3dFromString s = do
 --------------------------------------------------------------------------------
 -- Line
 --------------------------------------------------------------------------------
-newtype Line
-  = Line
+newtype Line = Line
   { start :: Point
   , stop :: Point
   }
@@ -105,8 +108,7 @@ instance showLine :: Show Line where
 --------------------------------------------------------------------------------
 -- Dimensions
 --------------------------------------------------------------------------------
-newtype Dimensions
-  = Dimensions
+newtype Dimensions = Dimensions
   { width :: Int
   , height :: Int
   }
@@ -117,8 +119,7 @@ instance showDimensions :: Show Dimensions where
 --------------------------------------------------------------------------------
 -- Rect
 --------------------------------------------------------------------------------
-newtype Rect
-  = Rect
+newtype Rect = Rect
   { origin :: Point
   , size :: Dimensions
   }
@@ -155,8 +156,7 @@ contains (Point { x, y }) r = x >= minX r && x <= maxX r && y >= minY r && y <= 
 --------------------------------------------------------------------------------
 -- Grid
 --------------------------------------------------------------------------------
-newtype Grid a
-  = Grid (Array (Array a))
+newtype Grid a = Grid (Array (Array a))
 
 instance showGridStrings :: Show (Grid String) where
   show (Grid rows) =
