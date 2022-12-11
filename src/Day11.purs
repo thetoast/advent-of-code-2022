@@ -4,7 +4,7 @@ module Day11 where
 
 import Prelude
 
-import Control.Monad.Rec.Class (Step(..), tailRec)
+import Control.Monad.Rec.Class (Step(..), tailRecM)
 import Data.Array ((!!))
 import Data.Array as Array
 import Data.BigInt (BigInt)
@@ -114,12 +114,10 @@ runRound :: Array Monkey -> Maybe (Array Monkey)
 runRound monkeys = Array.range 0 ((Array.length monkeys) - 1) # foldM tamper monkeys
 
 runRounds :: Int -> Array Monkey -> Maybe (Array Monkey)
-runRounds count monkeys = tailRec go { m: monkeys, c: count }
+runRounds count monkeys = tailRecM go { m: monkeys, c: count }
   where
-  go { m, c: 0 } = Done (Just m)
-  go { m, c } = case runRound m of
-    Just newM -> Loop { m: newM, c: c - 1 }
-    Nothing -> Done Nothing
+  go { m, c: 0 } = Just (Done m)
+  go { m, c } = runRound m <#> \m' -> Loop { m: m', c: c - 1 }
 
 parseInput :: String -> Maybe (Array Monkey)
 parseInput = String.split (Pattern "\n\n") >>> map (String.split (Pattern "\n")) >>> traverse parseMonkey
