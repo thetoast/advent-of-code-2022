@@ -44,10 +44,6 @@ initState =
   , pixels: Array.replicate 240 false
   }
 
---cycleCost :: Op -> Int
---cycleCost Noop = 1
---cycleCost (Addx _) = 2
-
 shouldLog :: Int -> Boolean
 shouldLog 20 = true
 shouldLog n
