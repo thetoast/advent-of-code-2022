@@ -13,6 +13,7 @@ to generate this file without the comments in this block.
 { name = "my-project"
 , dependencies =
   [ "arrays"
+  , "bigints"
   , "console"
   , "debug"
   , "effect"
@@ -23,6 +24,7 @@ to generate this file without the comments in this block.
   , "ordered-collections"
   , "prelude"
   , "strings"
+  , "tailrec"
   , "tuples"
   ]
 , packages = ./packages.dhall
