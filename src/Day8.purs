@@ -11,43 +11,12 @@ import Data.Traversable (traverse)
 import Day8Input as Day8Input
 import Effect (Effect)
 import Effect.Console (logShow)
-import Geometry (Dimensions(..), Grid, Point(..), gridDimensions, gridFromIntStrings, gridValueAt)
+import Geometry (Dimensions(..), Direction(..), Grid, Point, getLine, gridDimensions, gridFromIntStrings, gridValueAt, makePoints)
 
 -- }}}
 
 parseInput :: String -> Maybe (Grid Int)
 parseInput = gridFromIntStrings
-
-data Direction
-  = Up
-  | Right
-  | Down
-  | Left
-
-makePoints :: Array Int -> Array Int -> Array Point
-makePoints xs ys = do
-  x <- xs
-  y <- ys
-  [ Point { x, y } ]
-
-pointRange :: Grid Int -> Point -> Direction -> Maybe (Array Point)
-pointRange grid (Point { x, y }) direction = do
-  (Dimensions { height, width }) <- gridDimensions grid
-  let
-    xs = case direction of
-      Right -> Array.range (min (x + 1) (width - 1)) (width - 1)
-      Left -> Array.range (max (x - 1) 0) 0
-      _ -> [ x ]
-    ys = case direction of
-      Down -> Array.range (min (y + 1) (height - 1)) (height - 1)
-      Up -> Array.range (max (y - 1) 0) (0)
-      _ -> [ y ]
-  Just $ makePoints xs ys
-
-getLine :: Grid Int -> Point -> Direction -> Maybe (Array Int)
-getLine grid p direction = do
-  points <- pointRange grid p direction
-  traverse (\point -> gridValueAt point grid) points
 
 isVisibleDirection :: Grid Int -> Point -> Direction -> Maybe Boolean
 isVisibleDirection grid p direction = do

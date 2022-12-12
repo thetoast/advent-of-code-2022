@@ -7,11 +7,10 @@ import Prelude
 import Control.Monad.Rec.Class (Step(..), tailRecM)
 import Data.Array as Array
 import Data.Char (toCharCode)
-import Data.Foldable (foldM, foldl)
-import Data.FoldableWithIndex (foldlWithIndex)
+import Data.Foldable (foldl)
 import Data.List (List(..))
 import Data.List as List
-import Data.Maybe (Maybe(..), isJust)
+import Data.Maybe (Maybe(..))
 import Data.Set (Set)
 import Data.Set as Set
 import Data.String (Pattern(..))
@@ -23,7 +22,7 @@ import Day12Input as Day12Input
 import Debug (spyWith)
 import Effect (Effect)
 import Effect.Console (logShow)
-import Geometry (Grid(..), NeighborType(..), Point(..), gridFromPoints, gridPoints, gridValueAt, insertGridAt, toGrid, validNeighbors)
+import Geometry (Grid, NeighborType(..), Point, findAllInGrid, findInGrid, gridFromPoints, gridValueAt, insertGridAt, toGrid, validNeighbors)
 
 -- }}}
 
@@ -32,18 +31,6 @@ type InputMap =
   , start :: Point
   , end :: Point
   }
-
-findInGrid :: forall a. Eq a => Grid a -> a -> Maybe Point
-findInGrid (Grid g) a = foldlWithIndex findA Nothing g
-  where
-  findA y acc v =
-    if isJust acc then acc
-    else case Array.findIndex (eq a) v of
-      Just x -> Just (Point { x, y })
-      Nothing -> Nothing
-
-findAllInGrid :: forall a. Eq a => Grid a -> a -> Maybe (Array Point)
-findAllInGrid g a = gridPoints g # Array.filterA (flip gridValueAt g >>> map (eq a))
 
 toInputMap :: Array (Array Int) -> Maybe InputMap
 toInputMap g = do

@@ -3,10 +3,12 @@ module Geometry where
 import Prelude
 
 import Data.Array (concat, filter, intercalate, length, modifyAt, replicate, updateAt, (!!), (..))
+import Data.Array as Array
 import Data.Array.NonEmpty ((!!)) as NE
 import Data.Foldable (foldl)
+import Data.FoldableWithIndex (foldlWithIndex)
 import Data.Int (fromString, pow, toNumber)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), isJust)
 import Data.Number (sqrt)
 import Data.Ord (abs)
 import Data.String (split, Pattern(..))
@@ -55,6 +57,12 @@ pointFromString s = do
   x <- fromString =<< (join $ m NE.!! 1)
   y <- fromString =<< (join $ m NE.!! 2)
   pure $ Point { x, y }
+
+makePoints :: Array Int -> Array Int -> Array Point
+makePoints xs ys = do
+  x <- xs
+  y <- ys
+  [ Point { x, y } ]
 
 --------------------------------------------------------------------------------
 -- Point3D
@@ -233,6 +241,18 @@ modifyGridAt (Point { x, y }) fn (Grid rows) = do
 insertGridAt :: forall a. Point -> a -> Grid a -> Maybe (Grid a)
 insertGridAt p i = modifyGridAt p (\_ -> i)
 
+findInGrid :: forall a. Eq a => Grid a -> a -> Maybe Point
+findInGrid (Grid g) a = foldlWithIndex findA Nothing g
+  where
+  findA y acc v =
+    if isJust acc then acc
+    else case Array.findIndex (eq a) v of
+      Just x -> Just (Point { x, y })
+      Nothing -> Nothing
+
+findAllInGrid :: forall a. Eq a => Grid a -> a -> Maybe (Array Point)
+findAllInGrid g a = gridPoints g # Array.filterA (flip gridValueAt g >>> map (eq a))
+
 -- | does not handle negative x/y coords, assumes 0,0 origin
 gridFromPoints :: forall a. Array Point -> Tuple a a -> Maybe (Grid a)
 gridFromPoints points (Tuple emptyValue filledValue) = do
@@ -245,3 +265,32 @@ gridFromPoints points (Tuple emptyValue filledValue) = do
     { maxX: max x a.maxX
     , maxY: max y a.maxY
     }
+
+data Direction
+  = Up
+  | Right
+  | Down
+  | Left
+
+-- | Gets a set of points extending from a start point in a direction
+-- | Note: Does not include the start point
+pointRange :: forall a. Grid a -> Point -> Direction -> Maybe (Array Point)
+pointRange grid (Point { x, y }) direction = do
+  (Dimensions { height, width }) <- gridDimensions grid
+  let
+    xs = case direction of
+      Right -> Array.range (min (x + 1) (width - 1)) (width - 1)
+      Left -> Array.range (max (x - 1) 0) 0
+      _ -> [ x ]
+    ys = case direction of
+      Down -> Array.range (min (y + 1) (height - 1)) (height - 1)
+      Up -> Array.range (max (y - 1) 0) (0)
+      _ -> [ y ]
+  Just $ makePoints xs ys
+
+-- | Gets an array of values for points in a given direction from a start point
+-- | Note: does not include the start point
+getLine :: forall a. Grid a -> Point -> Direction -> Maybe (Array a)
+getLine grid p direction = do
+  points <- pointRange grid p direction
+  traverse (\point -> gridValueAt point grid) points

@@ -5,7 +5,7 @@ module Day9 where
 import Prelude
 
 import Data.Array as Array
-import Data.Foldable (foldM, foldl)
+import Data.Foldable (foldM)
 import Data.Int (fromString)
 import Data.Maybe (Maybe(..))
 import Data.Ord (abs)
@@ -13,10 +13,9 @@ import Data.Set (Set)
 import Data.Set as Set
 import Data.Tuple (Tuple(..))
 import Day9Input as Day9Input
-import Debug (spy)
 import Effect (Effect)
 import Effect.Console (logShow)
-import Geometry (Point(..), gridFromPoints)
+import Geometry (Point(..))
 import Parsing (linesFrom, tupleParser)
 
 -- }}}
