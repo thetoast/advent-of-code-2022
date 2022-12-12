@@ -7,6 +7,7 @@ import Prelude
 import Control.Monad.Rec.Class (Step(..), tailRecM)
 import Data.Array as Array
 import Data.Char (toCharCode)
+import Data.Foldable (foldM, foldl)
 import Data.FoldableWithIndex (foldlWithIndex)
 import Data.List (List(..))
 import Data.List as List
@@ -22,7 +23,7 @@ import Day12Input as Day12Input
 import Debug (spyWith)
 import Effect (Effect)
 import Effect.Console (logShow)
-import Geometry (Grid, NeighborType(..), Point(..), gridFromPoints, gridValueAt, insertGridAt, toGrid, validNeighbors)
+import Geometry (Grid(..), NeighborType(..), Point(..), gridFromPoints, gridPoints, gridValueAt, insertGridAt, toGrid, validNeighbors)
 
 -- }}}
 
@@ -32,6 +33,18 @@ type InputMap =
   , end :: Point
   }
 
+findInGrid :: forall a. Eq a => Grid a -> a -> Maybe Point
+findInGrid (Grid g) a = foldlWithIndex findA Nothing g
+  where
+  findA y acc v =
+    if isJust acc then acc
+    else case Array.findIndex (eq a) v of
+      Just x -> Just (Point { x, y })
+      Nothing -> Nothing
+
+findAllInGrid :: forall a. Eq a => Grid a -> a -> Maybe (Array Point)
+findAllInGrid g a = gridPoints g # Array.filterA (flip gridValueAt g >>> map (eq a))
+
 toInputMap :: Array (Array Int) -> Maybe InputMap
 toInputMap g = do
   let
@@ -39,16 +52,11 @@ toInputMap g = do
     endCode = toCharCode 'E'
     aCode = toCharCode 'a'
     zCode = toCharCode 'z'
-  start <- foldlWithIndex (findCode startCode) Nothing g
-  end <- foldlWithIndex (findCode endCode) Nothing g
-  grid <- toGrid g >>= insertGridAt start (aCode - 1) >>= insertGridAt end (zCode + 1)
-  pure { grid: grid, start, end }
-  where
-  findCode code y acc v =
-    if isJust acc then acc
-    else case Array.findIndex (eq code) v of
-      Just x -> Just (Point { x, y })
-      Nothing -> Nothing
+  grid <- toGrid g
+  start <- findInGrid grid startCode
+  end <- findInGrid grid endCode
+  newGrid <- insertGridAt start (aCode - 1) grid >>= insertGridAt end (zCode + 1)
+  pure { grid: newGrid, start, end }
 
 parseInput :: String -> Maybe InputMap
 parseInput = String.split (Pattern "\n") >>> map (String.split (Pattern "")) >>> traverse (traverse (toChar >>> map toCharCode)) >=> toInputMap
@@ -77,6 +85,16 @@ findShortestPath s@{ grid, end } = tailRecM go (initState s)
         newVisited = Set.insert p visited
       Just (Loop { queue: newQueue, visited: newVisited })
 
+solve2 :: InputMap -> Maybe (Array Point)
+solve2 s@{ grid } = findAllInGrid grid (toCharCode 'a') >>= foldl checkShortest Nothing
+  where
+  checkShortest a p = case findShortestPath (s { start = p }) of
+    Just path -> case a of
+      Just shortest -> if Array.length path < Array.length shortest then Just path else a
+      Nothing -> Just path
+    _ -> a
+
 main :: Effect Unit
 main = do
-  logShow $ parseInput Day12Input.realInput >>= findShortestPath <#> spyWith "grid" (\p -> gridFromPoints p (Tuple "." "#") # show) >>> Array.length
+  --logShow $ parseInput Day12Input.realInput >>= findShortestPath <#> spyWith "grid" (\p -> gridFromPoints p (Tuple "." "#") # show) >>> Array.length
+  logShow $ parseInput Day12Input.realInput >>= solve2 <#> spyWith "grid" (\p -> gridFromPoints p (Tuple "." "#") # show) >>> Array.length
